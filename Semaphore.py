@@ -1,40 +1,39 @@
-import argparse
-from keyboard import keyboard # local fork
+import argparse  # Импорт модуля для анализа аргументов командной строки
+from keyboard import keyboard  # Локальная версия fork
 
-import mediapipe as mp
-import cv2
+import mediapipe as mp  # Импорт библиотеки Mediapipe для обработки позы
+import cv2  # Импорт библиотеки OpenCV для работы с изображениями и видео
 
-from scipy.spatial import distance as dist
-from math import atan, atan2, pi, degrees
-from datetime import datetime
+from scipy.spatial import distance as dist  # Импорт функции расстояния из модуля scipy.spatial
+from math import atan, atan2, pi, degrees  # Импорт нескольких функций и переменных из модуля math
+from datetime import datetime  # Импорт функции datetime из модуля datetime
 
-DEFAULT_LANDMARKS_STYLE = mp.solutions.drawing_styles.get_default_pose_landmarks_style()
-DEFAULT_HAND_CONNECTIONS_STYLE = mp.solutions.drawing_styles.get_default_hand_connections_style()
+DEFAULT_LANDMARKS_STYLE = mp.solutions.drawing_styles.get_default_pose_landmarks_style()  # Установка стиля отрисовки ключевых точек позы по умолчанию из библиотеки Mediapipe
+DEFAULT_HAND_CONNECTIONS_STYLE = mp.solutions.drawing_styles.get_default_hand_connections_style()  # Установка стиля отрисовки соединений рук по умолчанию из библиотеки Mediapipe
 
-# Optionally record the video feed to a timestamped AVI in the current directory
-RECORDING_FILENAME = str(datetime.now()).replace('.','').replace(':','') + '.avi'
-FPS = 10
+# Название файла для записи видео в текущем каталоге с пометкой времени
+RECORDING_FILENAME = str(datetime.now()).replace('.', '').replace(':', '') + '.avi'
+FPS = 10  # Количество кадров в секунду
 
-VISIBILITY_THRESHOLD = .8 # amount of certainty that a body landmark is visible
-STRAIGHT_LIMB_MARGIN = 20 # degrees from 180
-EXTENDED_LIMB_MARGIN = .8 # lower limb length as fraction of upper limb
+VISIBILITY_THRESHOLD = .8  # Порог видимости ключевых точек
+STRAIGHT_LIMB_MARGIN = 20  # Соотклонение в градусах от 180
+EXTENDED_LIMB_MARGIN = .8  # Перераспределение длины нижней конечности в виде доли относительно верхней конечности
 
-LEG_LIFT_MIN = -30 # degrees below horizontal
+LEG_LIFT_MIN = -30  # Минимальный угол от горизонтали для подъема ноги
 
-ARM_CROSSED_RATIO = 2 # max distance from wrist to opposite elbow, relative to mouth width
+ARM_CROSSED_RATIO = 2  # Максимальное расстояние от запястья до противоположного локтя, относительно ширины рта
 
-MOUTH_COVER_THRESHOLD = .03 # hands over mouth max distance error out of 1
+MOUTH_COVER_THRESHOLD = .03  # Максимальная ошибка расстояния рук до рта
 
-SQUAT_THRESHOLD = .1 # max hip-to-knee vertical distance
+SQUAT_THRESHOLD = .1  # Максимальное вертикальное расстояние от бедра до колена
 
 JUMP_THRESHOLD = .0001
 
-LEG_ARROW_ANGLE = 18 # degrees from vertical standing; should be divisor of 90
+LEG_ARROW_ANGLE = 18  # Градусы от вертикального стояния; должен быть делителем 90
 
-FINGER_MOUTH_RATIO = 1.5 # open hand relative to mouth width
+FINGER_MOUTH_RATIO = 1.5  # Открытая рука относительно ширины рта
 
-# R side: 90 top to 0 right to -90 bottom
-# L side: 90 top to 180 left to 269... -> -90 bottom
+# Дескрипторы для возможной сигнализации
 SEMAPHORES = {
   (-90, -45): {'a': "a", 'n': "1"},
   (-90, 0): {'a': "b", 'n': "2"},
